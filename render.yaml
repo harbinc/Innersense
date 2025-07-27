@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: innersense
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    envVars:
+      - key: OPENAI_API_KEY
+        value: your-openai-key
+      - key: ELEVENLABS_API_KEY
+        value: your-elevenlabs-key
