@@ -56,7 +56,7 @@ def meditate():
         print("Sending prompt to OpenAI...")
 
         response = client.chat.completions.create(
-            model="gpt-4o", messages=[{"role": "user", "content": prompt}]
+            model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
         )
         meditation_text = response.choices[0].message.content
         print("Meditation script received.")
