@@ -16,7 +16,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Replace with your voice ID if needed
 
-# === OpenAI client (new API) ===
+# === OpenAI client (latest API) ===
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 DB_PATH = "innersense.db"
@@ -56,7 +56,7 @@ def meditate():
         print("Sending prompt to OpenAI...")
 
         response = client.chat.completions.create(
-            model="gpt-4", messages=[{"role": "user", "content": prompt}]
+            model="gpt-4o", messages=[{"role": "user", "content": prompt}]
         )
         meditation_text = response.choices[0].message.content
         print("Meditation script received.")
