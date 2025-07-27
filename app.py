@@ -8,8 +8,8 @@ from io import BytesIO
 app = Flask(__name__)
 
 # === Replace these with your actual API keys ===
-OPENAI_API_KEY = "your-openai-api-key"
-ELEVENLABS_API_KEY = "your-elevenlabs-api-key"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Change to your preferred voice ID
 
 openai.api_key = OPENAI_API_KEY
