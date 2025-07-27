@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>InnerSense - AI Guided Meditation</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>InnerSense</h1>
+        <p>Select your mood to begin a personalized meditation:</p>
+        <select id="mood">
+            <option value="stressed">Stressed</option>
+            <option value="anxious">Anxious</option>
+            <option value="tired">Tired</option>
+            <option value="unmotivated">Unmotivated</option>
+            <option value="grateful">Grateful</option>
+        </select>
+        <button onclick="startMeditation()">Begin</button>
+        <div id="player" style="display:none;">
+            <p>Playing your meditation...</p>
+            <audio id="audio" controls autoplay></audio>
+        </div>
+    </div>
+    <script>
+        function startMeditation() {
+            const mood = document.getElementById('mood').value;
+            fetch('/meditate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mood: mood })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Network error");
+                return response.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                document.getElementById('audio').src = url;
+                document.getElementById('player').style.display = 'block';
+            })
+            .catch(err => alert("Something went wrong: " + err));
+        }
+    </script>
+</body>
+</html>
