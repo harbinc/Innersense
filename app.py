@@ -2,7 +2,7 @@ import os
 import logging
 import traceback
 from flask import Flask, request, jsonify, render_template, send_file
-import openai
+from openai import OpenAI
 import sqlite3
 import requests
 from io import BytesIO
@@ -14,9 +14,11 @@ logging.basicConfig(level=logging.DEBUG)
 # === Load API keys from environment ===
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Replace with your own voice ID if needed
+ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Replace with your voice ID if needed
 
-openai.api_key = OPENAI_API_KEY
+# === OpenAI client (new API) ===
+client = OpenAI(api_key=OPENAI_API_KEY)
+
 DB_PATH = "innersense.db"
 
 
@@ -53,10 +55,10 @@ def meditate():
         prompt = f"Guide me through a calming 3-minute meditation for someone feeling {mood}. Use peaceful and reassuring language."
         print("Sending prompt to OpenAI...")
 
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4", messages=[{"role": "user", "content": prompt}]
         )
-        meditation_text = response["choices"][0]["message"]["content"]
+        meditation_text = response.choices[0].message.content
         print("Meditation script received.")
 
         print("Sending script to ElevenLabs...")
