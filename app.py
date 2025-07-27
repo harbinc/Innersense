@@ -1,16 +1,20 @@
 import os
+import logging
+import traceback
 from flask import Flask, request, jsonify, render_template, send_file
 import openai
 import sqlite3
 import requests
 from io import BytesIO
 
+# === Initialize Flask and Logging ===
 app = Flask(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
-# === Replace these with your actual API keys ===
+# === Load API keys from environment ===
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Change to your preferred voice ID
+ELEVENLABS_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Replace with your own voice ID if needed
 
 openai.api_key = OPENAI_API_KEY
 DB_PATH = "innersense.db"
@@ -27,7 +31,7 @@ def init_db():
                 transcript TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        """
+            """
         )
 
 
@@ -39,20 +43,23 @@ def home():
 
 @app.route("/meditate", methods=["POST"])
 def meditate():
-    mood = request.json.get("mood")
-    if not mood:
-        return jsonify({"error": "Mood not provided"}), 400
-
-    prompt = f"Guide me through a calming 3-minute meditation for someone feeling {mood}. Use peaceful and reassuring language."
-
     try:
-        # Generate script
+        mood = request.json.get("mood")
+        print("Received mood:", mood)
+
+        if not mood:
+            return jsonify({"error": "Mood not provided"}), 400
+
+        prompt = f"Guide me through a calming 3-minute meditation for someone feeling {mood}. Use peaceful and reassuring language."
+        print("Sending prompt to OpenAI...")
+
         response = openai.ChatCompletion.create(
             model="gpt-4", messages=[{"role": "user", "content": prompt}]
         )
         meditation_text = response["choices"][0]["message"]["content"]
+        print("Meditation script received.")
 
-        # Convert to voice
+        print("Sending script to ElevenLabs...")
         audio_response = requests.post(
             f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}",
             headers={
@@ -66,18 +73,21 @@ def meditate():
         )
 
         if audio_response.status_code != 200:
+            print("ElevenLabs Error:", audio_response.status_code, audio_response.text)
             return jsonify({"error": "Voice generation failed"}), 500
 
-        # Save session
         with sqlite3.connect(DB_PATH) as conn:
             conn.execute(
                 "INSERT INTO sessions (mood, transcript) VALUES (?, ?)",
                 (mood, meditation_text),
             )
+        print("Session saved to DB.")
 
         return send_file(BytesIO(audio_response.content), mimetype="audio/mpeg")
 
     except Exception as e:
+        print("Exception occurred:")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
